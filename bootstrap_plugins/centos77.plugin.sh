@@ -35,12 +35,8 @@ in_prefix_packages() {
 }
 
 # non-standard repos required for package installation
-additional_repos="https://download.docker.com/linux/centos/docker-ce.repo"
+additional_repos='https://download.docker.com/linux/centos/docker-ce.repo'
 
-# add addtional necessary repositories
-add_necessary_repos() {
-  add_repo "$additional_repos"
-}
 
 # packages to install
 list_general_packages='git ntp vim rsync pigz gdisk aria2 yum-versionlock'
@@ -48,6 +44,7 @@ list_docker_ce_packages='docker-ce-17.03.0.ce-1.el7.centos docker-ce-selinux-17.
 
 # script to run for installing general_packages
 in_general_packages() {
+    add_repo "$additional_repos"
     in_docker_ce "$list_docker_ce_packages"
     in_repo_pkg "$list_general_packages"
     sudo systemctl enable docker
@@ -60,7 +57,7 @@ list_suffix_packages='htop iotop iftop multitail dstat jq python-docker-py'
 # list_suffix_packages='htop jq pigz gdisk aria2 python-docker-py'
 
 # packages to lock after installation
-list_lock_packages='docker docker-common docker-client'
+list_lock_packages='docker-ce-17.03.0.ce-1.el7.centos'
 
 # script to run for installing suffix_packages
 in_suffix_packages() {

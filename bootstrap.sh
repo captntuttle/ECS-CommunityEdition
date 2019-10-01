@@ -504,11 +504,6 @@ p Performing preflight checklist
 do_preflight 2>&1 | log
 ping_sudo
 
-### Add repositories
-v "Adding some necessary repositories"
-p Add repositories
-add_necessary_repos 2>&1 | log
-ping_sudo
 
 ### Update repo databases and all system packages
 v "Updating system package manager databases pass (1/2)"
