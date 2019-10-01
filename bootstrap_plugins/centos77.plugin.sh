@@ -19,7 +19,7 @@ docker_binary='/bin/docker'
 # packages to clean up during preflight
 # Don't `yum autoremove curl`.  Yum is a dependency and it will throw errors.
 
-list_preflight_packages="git nfs-client nfs-tools rsync wget ntp docker-1.13.1-75.git8633870.el7.centos vim pigz gdisk aria2 htop iotop iftop multitail dstat jq python-docker-py dkms qemu-guest-agent open-vm-tools open-vm-tools-desktop docker"
+list_preflight_packages="git nfs-client nfs-tools rsync wget ntp docker vim pigz gdisk aria2 htop iotop iftop multitail dstat jq python-docker-py dkms qemu-guest-agent open-vm-tools open-vm-tools-desktop docker"
 
 # Do any OS-specific tasks that must be done prior to bootstrap
 do_preflight() {
@@ -27,24 +27,29 @@ do_preflight() {
 }
 
 # packages to install before others
-list_prefix_packages='wget curl epel-release yum-utils'
+list_prefix_packages='wget curl epel-release yum-utils device-mapper-persistent-data lvm2'
 
 # script to run for installing prefix_packages
 in_prefix_packages() {
     in_repo_pkg "$list_prefix_packages"
 }
 
-# packages to install
-# list_general_packages='yum-utils git python-pip python-docker-py'
+# non-standard repos required for package installation
+additional_repos="https://download.docker.com/linux/centos/docker-ce.repo"
 
-list_general_packages='git ntp docker-1.13.1-75.git8633870.el7.centos vim rsync pigz gdisk aria2 yum-versionlock'
+# add addtional necessary repositories
+add_necessary_repos() {
+  add_repo "$additional_repos"
+}
+
+# packages to install
+list_general_packages='git ntp vim rsync pigz gdisk aria2 yum-versionlock'
+list_docker_ce_packages='docker-ce-17.03.0.ce-1.el7.centos docker-ce-selinux-17.03.0.ce-1.el7.centos'
 
 # script to run for installing general_packages
 in_general_packages() {
+    in_docker_ce "$list_docker_ce_packages"
     in_repo_pkg "$list_general_packages"
-#    if ! docker version; then
-#        curl -fsSL https://get.docker.com/ | sudo sh
-#    fi
     sudo systemctl enable docker
     sudo systemctl start docker
     sudo usermod -aG docker $(whoami)
@@ -91,6 +96,16 @@ rm_repo_pkg() {
 # lock packages that we don't want updated
 lock_pkg() {
     sudo yum versionlock $*
+}
+
+# add additional repositories to yum
+add_repo() {
+  sudo yum-config-manager --add-repo $*
+}
+
+# docker-ce packages required for older docker version
+in_docker_ce() {
+    sudo yum install -y --setopt=obsoletes=0 $*
 }
 
 # command to update all packages in the os package manager
